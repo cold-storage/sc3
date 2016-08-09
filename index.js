@@ -25,13 +25,13 @@ var _ = require('lodash');
 // adjacent duplicate rows.
 //
 // This buffering and keeping state on current and prior rows is the real reason
-// for my existence. If not for that you would not need me. You could just
-// stream in and stream out directly.
+// for my existence. If not for that you could just stream in and stream out
+// directly.
 //
 // header specifies the column names of the CSV output. all output rows must be
 // JSON objects with properties of these names.
 //
-// output can be null, a string file name or a writable stream.
+// output can be null, a string file name, or a writable stream.
 //
 // if output is null, we use stdout.
 function CsvWriter(header, output) {
@@ -40,9 +40,9 @@ function CsvWriter(header, output) {
   }
   var me = this;
   this.header = header;
-  // if remove duplicates is true, we will automatically remove dups from the
-  // output for you.
-  // see rowIsDup() function for understanding of removeDuplicates.
+  // if remove duplicates is true, we will automatically remove dups from
+  // adjacent rows, i.e. there won't be any duplicates in flushRows and
+  // priorFlushRows. see rowIsDup()
   this.removeDuplicates = false;
   // if you add one or more input row column headings to groupCols, we will
   // group all rows of the same value for those columns and flush them together.
@@ -73,9 +73,8 @@ function CsvWriter(header, output) {
       '\n   flushRows: ' + JSON.stringify(this.flushRows) +
       '\n   priorFlushRows: ' + JSON.stringify(this.priorFlushRows);
   };
-  // This method must be implemented. You may pass null, a single row
-  // or an array of rows to cb. If you pass null, it effectively removes
-  // the incoming row from the output.
+  // This method must be implemented. Just transform inRow to zero or more out
+  // rows as needed.
   this.transform = function transform(inRow, outRows, cb) {
     cb(new Error('transform method not implemented'));
   };
@@ -153,37 +152,31 @@ function CsvWriter(header, output) {
     if (final) {
       me.moveOutToFlush();
     }
-    me.onFlush(me.flushRows, function(err) {
-      if (err) {
-        cb(err);
-        return;
-      }
-      var fns = [];
-      if (!me.headerWritten) {
-        me.headerWritten = true;
-        fns.push(me.outstream.write.bind(
-          me.outstream, stringify.stringify(me.header) + '\n'));
-      }
-      me.flushRows.forEach(function(row) {
-        var rowa = [];
-        me.header.forEach(function(colname) {
-          rowa.push(row[colname]);
-        });
-        fns.push(me.outstream.write.bind(
-          me.outstream, stringify.stringify(rowa) + '\n'));
+    var fns = [me.onFlush.bind(me, me.flushRows)];
+    if (!me.headerWritten) {
+      me.headerWritten = true;
+      fns.push(me.outstream.write.bind(
+        me.outstream, stringify.stringify(me.header) + '\n'));
+    }
+    me.flushRows.forEach(function(row) {
+      var rowa = [];
+      me.header.forEach(function(colname) {
+        rowa.push(row[colname]);
       });
-      me.priorFlushRows = me.flushRows;
-      me.flushRows = [];
-      async.series(fns, function(err) {
-        cb(err);
-      });
+      fns.push(me.outstream.write.bind(
+        me.outstream, stringify.stringify(rowa) + '\n'));
+    });
+    me.priorFlushRows = me.flushRows;
+    me.flushRows = [];
+    async.series(fns, function(err) {
+      cb(err);
     });
   };
 }
 
 // My job is to read a stream of CSV formatted data, transform each row to JSON,
 // and pass it to the onRow(row) method of each of my writers. After the
-// final row I call each of my writers flush(true) methods.
+// final row I call each of my writers flush() methods.
 //
 // input may be null, a file path+name, a CSV string, or a readable.
 //
