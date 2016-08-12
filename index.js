@@ -53,8 +53,8 @@ function CsvWriter(header, output) {
   this.outRows = [];
   this.flushRows = [];
   // the rest of this probably should be left alone. let the writer work for you.
-  this.priorInRow = {};
   this.inRow = {};
+  this.priorInRow = {};
   this.priorFlushRows = [];
   if (!output) {
     this.outstream = process.stdout;
@@ -67,11 +67,11 @@ function CsvWriter(header, output) {
     return 'CsvWriter\n   header: ' + this.header +
       '\n   removeDuplicates: ' + this.removeDuplicates +
       '\n   groupCols: ' + this.groupCols +
-      '\n   inRow: ' + JSON.stringify(this.inRow) +
-      '\n   priorInRow: ' + JSON.stringify(this.priorInRow) +
       '\n   outRows: ' + JSON.stringify(this.outRows) +
       '\n   flushRows: ' + JSON.stringify(this.flushRows) +
-      '\n   priorFlushRows: ' + JSON.stringify(this.priorFlushRows);
+      '\n   priorFlushRows: ' + JSON.stringify(this.priorFlushRows) +
+      '\n   inRow: ' + JSON.stringify(this.inRow) +
+      '\n   priorInRow: ' + JSON.stringify(this.priorInRow);
   };
   // This method must be implemented. Just transform inRow to zero or more out
   // rows as needed.

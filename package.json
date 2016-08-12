@@ -13,8 +13,14 @@
     "lodash": "4.14.1",
     "stream-transform": "0.1.1"
   },
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha"
+  },
   "jshintConfig": {
     "node": true,
     "esversion": 5
+  },
+  "devDependencies": {
+    "mocha": "3.0.2"
   }
 }
