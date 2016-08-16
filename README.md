@@ -72,3 +72,9 @@ id,name,mobile,home,work
 007,James Bond,935.977.1112,935.342.8884,
 99,Ninety Nine,022.375.3661,022.668.0033,022.110.7474
 ```
+
+### attr.js
+
+```
+$ example/attr.js < example/attr.csv
+```

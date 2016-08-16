@@ -5,7 +5,6 @@
 var fs = require('fs');
 var async = require('async');
 var parse = require('csv-parse');
-var transform = require('stream-transform');
 var stringify = require('csv-stringify')();
 var stream = require('stream');
 var _ = require('lodash');
@@ -121,7 +120,7 @@ function CsvWriter(header, output) {
   // This is just the stuff I need to do before handling a new row or before
   // flushing for the last time.
   this.moveOutToFlush = function moveOutToFlush(inRow) {
-    me.priorInRow = me.inRow;
+    me.priorInRow = me.inRow || {};
     me.inRow = inRow;
     me.outRows.forEach(function(row) {
       if (!me.removeDuplicates || !me.rowIsDup(row)) {
@@ -218,12 +217,14 @@ function CsvReader(writers, input) {
       .pipe(parse({
         columns: true
       }))
-      .pipe(transform(function(row, cb) {
+      .on('data', function(row) {
         var onRows = me.writers.map(function(w) {
           return w.onRow.bind(w, row);
         });
-        async.series(onRows, cb);
-      }))
+        async.series(onRows, function() {
+          // nada
+        });
+      })
       .on('error', function(err) {
         cb(err);
       })
