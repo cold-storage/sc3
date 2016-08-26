@@ -78,7 +78,7 @@ function CsvWriter(header, output) {
     cb(new Error('transform method not implemented'));
   };
   // default implementation does nothing. you can implement if you need to.
-  this.onFlush = function onFlush(flushRows, cb) {
+  this.onFlush = function onFlush(flushRows, final, cb) {
     cb();
   };
   // shouldFlush could also be named "we got a row (inRow) that's not in the
@@ -151,7 +151,7 @@ function CsvWriter(header, output) {
     if (final) {
       me.moveOutToFlush();
     }
-    var fns = [me.onFlush.bind(me, me.flushRows)];
+    var fns = [me.onFlush.bind(me, me.flushRows, final)];
     if (!me.headerWritten) {
       me.headerWritten = true;
       fns.push(me.outstream.write.bind(
