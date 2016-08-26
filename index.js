@@ -151,24 +151,28 @@ function CsvWriter(header, output) {
     if (final) {
       me.moveOutToFlush();
     }
-    var fns = [me.onFlush.bind(me, me.flushRows, final)];
-    if (!me.headerWritten) {
-      me.headerWritten = true;
-      fns.push(me.outstream.write.bind(
-        me.outstream, stringify.stringify(me.header) + '\n'));
-    }
-    me.flushRows.forEach(function(row) {
-      var rowa = [];
-      me.header.forEach(function(colname) {
-        rowa.push(row[colname]);
+    me.onFlush(me.flushRows, final, function(flushRows, final) {
+      var fns = [function(cb) {
+        cb(null);
+      }];
+      if (!me.headerWritten) {
+        me.headerWritten = true;
+        fns.push(me.outstream.write.bind(
+          me.outstream, stringify.stringify(me.header) + '\n'));
+      }
+      me.flushRows.forEach(function(row) {
+        var rowa = [];
+        me.header.forEach(function(colname) {
+          rowa.push(row[colname]);
+        });
+        fns.push(me.outstream.write.bind(
+          me.outstream, stringify.stringify(rowa) + '\n'));
       });
-      fns.push(me.outstream.write.bind(
-        me.outstream, stringify.stringify(rowa) + '\n'));
-    });
-    me.priorFlushRows = me.flushRows;
-    me.flushRows = [];
-    async.series(fns, function(err) {
-      cb(err);
+      async.series(fns, function(err) {
+        me.priorFlushRows = me.flushRows;
+        me.flushRows = [];
+        cb(err);
+      });
     });
   };
 }
