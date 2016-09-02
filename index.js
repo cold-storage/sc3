@@ -151,7 +151,7 @@ function CsvWriter(header, output) {
     if (final) {
       me.moveOutToFlush();
     }
-    me.onFlush(me.flushRows, final, function(flushRows, final) {
+    me.onFlush(me.flushRows, final, function(err) {
       var fns = [function(cb) {
         cb(null);
       }];
@@ -168,9 +168,9 @@ function CsvWriter(header, output) {
         fns.push(me.outstream.write.bind(
           me.outstream, stringify.stringify(rowa) + '\n'));
       });
+      me.priorFlushRows = me.flushRows;
+      me.flushRows = [];
       async.series(fns, function(err) {
-        me.priorFlushRows = me.flushRows;
-        me.flushRows = [];
         cb(err);
       });
     });

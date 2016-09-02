@@ -75,6 +75,6 @@ id,name,mobile,home,work
 
 ### attr.js
 
-```
-$ example/attr.js < example/attr.csv
+```bash
+example/attr.js < example/attr.csv
 ```

@@ -139,7 +139,7 @@ aattr.transform = function(inRow, outRows, cb) {
 // Pass our writer to our reader and kick things off with .read(). Passing
 // process.argv[2] allows you to pass input file as parameter or if none passed
 // we read from STDIN.
-(new sc3.CsvReader([cattr], process.argv[2])).read(function(err) {
+(new sc3.CsvReader([aattr, cattr], process.argv[2])).read(function(err) {
   if (err) {
     throw err;
   }
