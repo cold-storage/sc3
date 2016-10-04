@@ -152,6 +152,10 @@ function CsvWriter(header, output) {
       me.moveOutToFlush();
     }
     me.onFlush(me.flushRows, final, function(err) {
+      if (err) {
+        cb(err);
+        return;
+      }
       var fns = [function(cb) {
         cb(null);
       }];
