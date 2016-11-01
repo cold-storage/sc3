@@ -1,6 +1,6 @@
 # sc3
 
-**DEPRECATED**
+**DEPRECATED** We don't use sc3 anymore.
 
 Now that we know what we are doing, we just do this. You can add as many transform
 streams as you like in the pipe.
