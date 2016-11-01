@@ -1,5 +1,64 @@
 # sc3
 
+**DEPRECATED**
+
+Now that we know what we are doing, we just do this. You can add as many transform
+streams as you like in the pipe.
+
+```
+#!/usr/bin/env node
+
+'use strict';
+
+const stream = require('stream');
+const csvParse = require('csv-parse');
+const csvStringify = require('csv-stringify');
+const multipipe = require('multipipe');
+
+const transform = new stream.Transform({
+  objectMode: true,
+  transform(i, encoding, cb) {
+    let o = {};
+
+    o.Email = i['[email]'];
+    o.EMAIL_ID__c = i['[email]'];
+    o.FirstName = i['[fname]'];
+    o.LastName = i['[lname]'] || 'NO LAST NAME';
+    // na o.xxx = i['[prefix]'];
+    // na only 1 o.xxx = i['[suffix]'];
+    // na o.xxx = i['[fax]'];
+    o.Phone = i['[phone]'];
+    // na only 1 this is the name of a business o.xxx = i['[business]'];
+    o.MailingStreet = i['[address1]'];
+    // na o.xxx = i['[address2]'];
+    o.MailingCity = i['[city]'];
+    o.MailingState = i['[state]'];
+    o.MailingPostalCode = i['[zip]'];
+    o.iContact_Setdate__c = i['[setdate]'].substring(0, 10);
+
+    this.push(o);
+    cb();
+  }
+});
+
+multipipe(
+  process.stdin,
+  csvParse({
+    columns: true
+  }),
+  transform,
+  csvStringify({
+    header: true
+  }),
+  process.stdout,
+  (err) => {
+    if (err) {
+      console.error('ERROR', err);
+      process.exit(9);
+    }
+  });
+```
+
 sc3 is a Node.js streaming library for reading, transforming, and writing to
 CSV. We may add reading from other formats like Excel or SQL in the future. The
 motivational use case for this was Salesforce data migration. Ugh!!!
